@@ -13,13 +13,17 @@ def fetch_exchange_rates():
             html = response.read().decode('euc-kr')
             
             import pandas as pd
-            tables = pd.read_html(html, encoding='euc-kr')
+            import io
+            # StringIO를 사용하여 경고 해결
+            tables = pd.read_html(io.StringIO(html))
             df = tables[0]
             
             rates = []
             for index, row in df.iterrows():
+                # 통화명 컬럼의 데이터를 명시적으로 문자열로 변환 후 strip 처리
+                country_name = str(row['통화명']).strip()
                 rates.append({
-                    "country": row['통화명'].strip(),
+                    "country": country_name,
                     "standard_rate": str(row['매매기준율']),
                     "fluctuation": str(row['전일대비'])
                 })
