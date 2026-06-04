@@ -32,7 +32,9 @@ def fetch_exchange_rates():
 def main():
     rates = fetch_exchange_rates()
     if not rates:
-        return
+        import sys
+        print("Failed to fetch rates. Exiting with error.")
+        sys.exit(1)
 
     tz = pytz.timezone('Asia/Seoul')
     now = datetime.now(tz)
