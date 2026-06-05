@@ -1,11 +1,8 @@
 name: Update Daily Last Currency
 on:
-  push:
-    branches: [ "main" ]
-  schedule:
-    # 매일 UTC 기준 오전 06:30 (한국 시간 KST 기준 오후 15:30)에 실행
-    - cron: '*/5 * * * *'
   workflow_dispatch:
+  schedule:
+    - cron: '*/5 * * * *'
 
 permissions:
   contents: write
