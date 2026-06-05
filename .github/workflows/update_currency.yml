@@ -5,6 +5,8 @@ on:
     - cron: '*/7 * * * *'
   workflow_dispatch:
 
+  push:
+    branches: [main]  # Temporary trigger to force GitHub schedule recognition
 permissions:
   contents: write
 
