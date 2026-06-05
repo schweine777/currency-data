@@ -1,9 +1,5 @@
 name: Update Daily Last Currency
-on:
-  workflow_run:
-    workflows: ["Dummy Scheduler"] # 더미 워크플로우의 'name'과 정확히 일치해야 함
-    types:
-      - completed
+on: # schedule by cron-job.org
   workflow_dispatch:
 
 permissions:
