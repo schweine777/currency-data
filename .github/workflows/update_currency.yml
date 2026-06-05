@@ -2,7 +2,7 @@ name: Update Daily Currency
 on:
   schedule:
     # 매일 UTC 기준 오전 06:30 (한국 시간 KST 기준 오후 15:30)에 실행
-    - cron: '*/2 * * * *'
+    - cron: '*/7 * * * *'
   workflow_dispatch:
 
 permissions:
