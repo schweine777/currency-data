@@ -120,13 +120,41 @@ def generate_currency_graphs_for_code(ticker_symbol, currency_code, output_path,
     for label, period, interval in periods:
         # 데이터 다운로드
         try:
+            # 1순위: 직접 환율 시도
             data = yf.download(tickers=ticker_symbol, period=period, interval=interval, progress=False)
             
+            # 2순위: 직접 환율이 없으면 교차 환율(Cross Rate) 계산 (USD 기준)
             if data.empty and currency_code != "USD":
-                alt_ticker = f"{currency_code}=X"
-                data = yf.download(tickers=alt_ticker, period=period, interval=interval, progress=False)
-                if not data.empty:
-                    print(f"  Note: Using alternative ticker {alt_ticker} for {currency_code}")
+                print(f"  Note: Direct ticker {ticker_symbol} not found. Attempting cross-rate calculation...")
+                
+                # USD/KRW 기준 데이터 가져오기
+                usd_krw = yf.download(tickers="USDKRW=X", period=period, interval=interval, progress=False)
+                # 대상 통화의 USD 환율 가져오기
+                target_usd = yf.download(tickers=f"{currency_code}=X", period=period, interval=interval, progress=False)
+                
+                if not usd_krw.empty and not target_usd.empty:
+                    # 두 데이터의 인덱스(시간)를 기준으로 병합
+                    combined = pd.merge_asof(
+                        usd_krw[['Close']].rename(columns={'Close': 'USD_KRW'}),
+                        target_usd[['Close']].rename(columns={'Close': 'TARGET_USD'}),
+                        left_index=True, right_index=True, direction='nearest'
+                    )
+                    
+                    # 환율 계산 로직
+                    # Yahoo Finance 관습: 
+                    # 1. EUR, GBP, AUD, NZD는 보통 [CODE]/USD 형식 (1유로당 몇 달러인지)
+                    # 2. 나머지는 보통 USD/[CODE] 형식 (1달러당 몇 루블인지)
+                    direct_usd_list = ["EUR", "GBP", "AUD", "NZD"]
+                    
+                    if currency_code in direct_usd_list:
+                        # [CODE]/KRW = (USD/KRW) * ([CODE]/USD)
+                        combined['Close'] = combined['USD_KRW'] * combined['TARGET_USD']
+                    else:
+                        # [CODE]/KRW = (USD/KRW) / (USD/[CODE])
+                        combined['Close'] = combined['USD_KRW'] / combined['TARGET_USD']
+                    
+                    data = combined[['Close']]
+                    print(f"  Successfully calculated cross-rate for {currency_code}")
 
             if data.empty:
                 print(f"  No data found for {currency_code} ({period}). Skipping.")
@@ -199,6 +227,12 @@ def generate_currency_graphs_for_code(ticker_symbol, currency_code, output_path,
             print(f"  Error processing {period}: {e}")
 
 if __name__ == "__main__":
+    # 텔레그램 즉시 테스트 기능 (ex: python3 generate_graphs.py test_telegram)
+    if len(sys.argv) > 1 and sys.argv[1].lower() == "test_telegram":
+        print("Sending test Telegram message...")
+        send_telegram_message("🔔 [Graph Generator] Telegram notification test successful!")
+        sys.exit(0)
+
     # 네이버 금융 제공 전체 국가/통화 목록 (달러인덱스 제외)
     full_currency_list = [
         "USD", "EUR", "JPY", "CNY", "HKD", "TWD", "SGD", "THB", "VND", "PHP", 
