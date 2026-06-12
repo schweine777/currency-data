@@ -105,6 +105,7 @@ def generate_currency_graphs_for_code(ticker_symbol, currency_code, output_path,
     """
     # 1일(1d)을 제외한 나머지 기간 설정
     periods = [
+        ("1주", "1wk", "1h"),
         ("1개월", "1mo", "1d"),
         ("3개월", "3mo", "1d"),
         ("6개월", "6mo", "1d"),
@@ -118,57 +119,44 @@ def generate_currency_graphs_for_code(ticker_symbol, currency_code, output_path,
     now = datetime.now().astimezone(pd.Timestamp.now(tz='Asia/Seoul').tz)
 
     for label, period, interval in periods:
+        filename = f"{base_filename}_{period}.png"
+        filepath = os.path.join(output_path, filename)
+        
         # 데이터 다운로드
         try:
+            # 유효 데이터 추출 함수
+            def get_valid_series(df):
+                if df is None or df.empty:
+                    return pd.Series(dtype='float64')
+                if 'Close' in df.columns:
+                    s = df['Close'].dropna()
+                else:
+                    try:
+                        s = df.xs('Close', axis=1, level=0).dropna()
+                    except:
+                        return pd.Series(dtype='float64')
+                if isinstance(s, pd.DataFrame):
+                    s = s.iloc[:, 0]
+                return s
+
             # 1순위: 직접 환율 시도
             data = yf.download(tickers=ticker_symbol, period=period, interval=interval, progress=False)
-            
-            # yfinance 최신 버전에서는 데이터가 없어도 컬럼 구조만 있는 빈 DataFrame을 반환할 수 있음
-            # 데이터 행이 없거나, 'Close' 컬럼에 유효한 값이 하나도 없는 경우 체크
-            is_data_empty = data.empty
-            if not is_data_empty:
-                if 'Close' in data.columns:
-                    is_data_empty = data['Close'].dropna().empty
-                else:
-                    # MultiIndex(버전 0.2+) 대응
-                    try:
-                        is_data_empty = data.xs('Close', axis=1, level=0).dropna().empty
-                    except:
-                        is_data_empty = True
+            valid_close = get_valid_series(data)
 
-            # 2순위: 직접 환율이 없으면 교차 환율(Cross Rate) 계산 (USD 기준)
-            if is_data_empty and currency_code != "USD":
-                print(f"  Note: Direct ticker {ticker_symbol} not found. Attempting cross-rate calculation...")
+            # 2순위: 직접 환율 데이터가 부족하면 교차 환율(Cross Rate) 계산 (USD 기준)
+            if len(valid_close) < 2 and currency_code != "USD":
+                print(f"  Note: Direct ticker {ticker_symbol} has insufficient data ({len(valid_close)} pts). Attempting cross-rate...")
                 
                 # USD/KRW 기준 데이터 가져오기
                 usd_krw = yf.download(tickers="USDKRW=X", period=period, interval=interval, progress=False)
                 # 대상 통화의 USD 환율 가져오기
                 target_usd = yf.download(tickers=f"{currency_code}=X", period=period, interval=interval, progress=False)
                 
-                # 데이터 추출 함수 (MultiIndex 대응)
-                def get_close_series(df):
-                    if df is None or df.empty: return pd.Series(dtype='float64')
-                    # 'Close' 컬럼이 직접 있는 경우
-                    if 'Close' in df.columns:
-                        series = df['Close']
-                        if isinstance(series, pd.DataFrame): # MultiIndex인 경우 첫 번째 컬럼 선택
-                            series = series.iloc[:, 0]
-                        return series
-                    # MultiIndex(버전 0.2+) 대응
-                    try:
-                        series = df.xs('Close', axis=1, level=0)
-                        if isinstance(series, pd.DataFrame):
-                            series = series.iloc[:, 0]
-                        return series
-                    except:
-                        return pd.Series(dtype='float64')
+                s_usd_krw = get_valid_series(usd_krw)
+                s_target_usd = get_valid_series(target_usd)
 
-                s_usd_krw = get_close_series(usd_krw)
-                s_target_usd = get_close_series(target_usd)
-
-                if not s_usd_krw.dropna().empty and not s_target_usd.dropna().empty:
+                if not s_usd_krw.empty and not s_target_usd.empty:
                     # 두 데이터의 인덱스(시간)를 기준으로 병합
-                    # Series이므로 to_frame()이 확실히 동작함
                     df_usd_krw = s_usd_krw.to_frame(name='USD_KRW').sort_index()
                     df_target_usd = s_target_usd.to_frame(name='TARGET_USD').sort_index()
                     
@@ -187,11 +175,14 @@ def generate_currency_graphs_for_code(ticker_symbol, currency_code, output_path,
                         combined['Close'] = combined['USD_KRW'] / combined['TARGET_USD']
                     
                     data = combined[['Close']]
-                    is_data_empty = False
-                    print(f"  Successfully calculated cross-rate for {currency_code}")
+                    valid_close = get_valid_series(data)
+                    print(f"  Successfully calculated cross-rate for {currency_code} ({len(valid_close)} pts)")
 
-            if is_data_empty:
-                print(f"  No data found for {currency_code} ({period}). Skipping.")
+            # 최종 데이터 확인 (2개 미만이면 그래프 생성 불가 및 기존 파일 삭제)
+            if len(valid_close) < 2:
+                print(f"  Insufficient data ({len(valid_close)} pts) for {currency_code} ({period}). Skipping and removing stale file.")
+                if os.path.exists(filepath):
+                    os.remove(filepath)
                 continue
 
             # 100단위 환율 처리 (엔화, 베트남 동 등)
@@ -212,14 +203,10 @@ def generate_currency_graphs_for_code(ticker_symbol, currency_code, output_path,
             
             # 최고/최저점 표시 및 점 찍기
             try:
-                close_series = data['Close']
-                if isinstance(close_series, pd.DataFrame):
-                    close_series = close_series.iloc[:, 0]
-                
-                max_val = close_series.max()
-                min_val = close_series.min()
-                max_idx = close_series.idxmax()
-                min_idx = close_series.idxmin()
+                max_val = valid_close.max()
+                min_val = valid_close.min()
+                max_idx = valid_close.idxmax()
+                min_idx = valid_close.idxmin()
 
                 plt.scatter(max_idx, max_val, color='darkred', s=50, zorder=5)
                 plt.scatter(min_idx, min_val, color='blue', s=50, zorder=5)
@@ -246,9 +233,6 @@ def generate_currency_graphs_for_code(ticker_symbol, currency_code, output_path,
             plt.tight_layout()
 
             # 파일 저장 (기존 파일이 있으면 삭제 후 저장)
-            filename = f"{base_filename}_{period}.png"
-            filepath = os.path.join(output_path, filename)
-            
             if os.path.exists(filepath):
                 os.remove(filepath)
             
