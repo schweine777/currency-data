@@ -24,7 +24,9 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run graph generator
-        run: python generate_graphs.py
+        run: |
+          cd script
+          python generate_graphs.py
 
       - name: Commit and push changes
         run: |
