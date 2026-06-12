@@ -123,8 +123,21 @@ def generate_currency_graphs_for_code(ticker_symbol, currency_code, output_path,
             # 1순위: 직접 환율 시도
             data = yf.download(tickers=ticker_symbol, period=period, interval=interval, progress=False)
             
+            # yfinance 최신 버전에서는 데이터가 없어도 컬럼 구조만 있는 빈 DataFrame을 반환할 수 있음
+            # 데이터 행이 없거나, 'Close' 컬럼에 유효한 값이 하나도 없는 경우 체크
+            is_data_empty = data.empty
+            if not is_data_empty:
+                if 'Close' in data.columns:
+                    is_data_empty = data['Close'].dropna().empty
+                else:
+                    # MultiIndex(버전 0.2+) 대응
+                    try:
+                        is_data_empty = data.xs('Close', axis=1, level=0).dropna().empty
+                    except:
+                        is_data_empty = True
+
             # 2순위: 직접 환율이 없으면 교차 환율(Cross Rate) 계산 (USD 기준)
-            if data.empty and currency_code != "USD":
+            if is_data_empty and currency_code != "USD":
                 print(f"  Note: Direct ticker {ticker_symbol} not found. Attempting cross-rate calculation...")
                 
                 # USD/KRW 기준 데이터 가져오기
@@ -132,31 +145,37 @@ def generate_currency_graphs_for_code(ticker_symbol, currency_code, output_path,
                 # 대상 통화의 USD 환율 가져오기
                 target_usd = yf.download(tickers=f"{currency_code}=X", period=period, interval=interval, progress=False)
                 
-                if not usd_krw.empty and not target_usd.empty:
+                # 데이터 추출 함수 (MultiIndex 대응)
+                def get_close_series(df):
+                    if df.empty: return pd.Series()
+                    if 'Close' in df.columns: return df['Close']
+                    try: return df.xs('Close', axis=1, level=0).iloc[:, 0]
+                    except: return pd.Series()
+
+                s_usd_krw = get_close_series(usd_krw)
+                s_target_usd = get_close_series(target_usd)
+
+                if not s_usd_krw.dropna().empty and not s_target_usd.dropna().empty:
                     # 두 데이터의 인덱스(시간)를 기준으로 병합
                     combined = pd.merge_asof(
-                        usd_krw[['Close']].rename(columns={'Close': 'USD_KRW'}),
-                        target_usd[['Close']].rename(columns={'Close': 'TARGET_USD'}),
+                        s_usd_krw.to_frame(name='USD_KRW').sort_index(),
+                        s_target_usd.to_frame(name='TARGET_USD').sort_index(),
                         left_index=True, right_index=True, direction='nearest'
                     )
                     
                     # 환율 계산 로직
-                    # Yahoo Finance 관습: 
-                    # 1. EUR, GBP, AUD, NZD는 보통 [CODE]/USD 형식 (1유로당 몇 달러인지)
-                    # 2. 나머지는 보통 USD/[CODE] 형식 (1달러당 몇 루블인지)
                     direct_usd_list = ["EUR", "GBP", "AUD", "NZD"]
                     
                     if currency_code in direct_usd_list:
-                        # [CODE]/KRW = (USD/KRW) * ([CODE]/USD)
                         combined['Close'] = combined['USD_KRW'] * combined['TARGET_USD']
                     else:
-                        # [CODE]/KRW = (USD/KRW) / (USD/[CODE])
                         combined['Close'] = combined['USD_KRW'] / combined['TARGET_USD']
                     
                     data = combined[['Close']]
+                    is_data_empty = False
                     print(f"  Successfully calculated cross-rate for {currency_code}")
 
-            if data.empty:
+            if is_data_empty:
                 print(f"  No data found for {currency_code} ({period}). Skipping.")
                 continue
 
