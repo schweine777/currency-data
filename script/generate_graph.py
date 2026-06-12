@@ -7,7 +7,7 @@ def install_dependencies():
     """
     필요한 라이브러리가 설치되어 있는지 확인하고, 없으면 자동으로 설치합니다.
     """
-    required_packages = ["yfinance", "matplotlib", "pandas"]
+    required_packages = ["yfinance", "matplotlib", "pandas", "requests"]
     missing_packages = []
 
     for package in required_packages:

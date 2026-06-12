@@ -23,9 +23,12 @@ jobs:
           python -m pip install --upgrade pip
 
       - name: Run graph generator
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           cd script
-          python generate_graph.py test_telegram
+          python generate_graph.py FAIL_TEST
 
       - name: Commit and push changes
         run: |
@@ -40,3 +43,15 @@ jobs:
             git commit -m "Update currency graphs [skip ci]"
             git push
           fi
+
+      - name: Send Telegram notification on failure
+        if: failure()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+            ⚠️ [Currency Graph Generation Failed]
+            The graph generation task failed.
+            Please check the GitHub Actions logs for details.
+            Repo: ${{ github.repository }}
