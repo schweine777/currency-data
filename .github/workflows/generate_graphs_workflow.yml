@@ -25,7 +25,7 @@ jobs:
       - name: Run graph generator
         run: |
           cd script
-          python generate_graphs.py
+          python generate_graph.py
 
       - name: Commit and push changes
         run: |
