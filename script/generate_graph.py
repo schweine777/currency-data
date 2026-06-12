@@ -147,19 +147,34 @@ def generate_currency_graphs_for_code(ticker_symbol, currency_code, output_path,
                 
                 # 데이터 추출 함수 (MultiIndex 대응)
                 def get_close_series(df):
-                    if df.empty: return pd.Series()
-                    if 'Close' in df.columns: return df['Close']
-                    try: return df.xs('Close', axis=1, level=0).iloc[:, 0]
-                    except: return pd.Series()
+                    if df is None or df.empty: return pd.Series(dtype='float64')
+                    # 'Close' 컬럼이 직접 있는 경우
+                    if 'Close' in df.columns:
+                        series = df['Close']
+                        if isinstance(series, pd.DataFrame): # MultiIndex인 경우 첫 번째 컬럼 선택
+                            series = series.iloc[:, 0]
+                        return series
+                    # MultiIndex(버전 0.2+) 대응
+                    try:
+                        series = df.xs('Close', axis=1, level=0)
+                        if isinstance(series, pd.DataFrame):
+                            series = series.iloc[:, 0]
+                        return series
+                    except:
+                        return pd.Series(dtype='float64')
 
                 s_usd_krw = get_close_series(usd_krw)
                 s_target_usd = get_close_series(target_usd)
 
                 if not s_usd_krw.dropna().empty and not s_target_usd.dropna().empty:
                     # 두 데이터의 인덱스(시간)를 기준으로 병합
+                    # Series이므로 to_frame()이 확실히 동작함
+                    df_usd_krw = s_usd_krw.to_frame(name='USD_KRW').sort_index()
+                    df_target_usd = s_target_usd.to_frame(name='TARGET_USD').sort_index()
+                    
                     combined = pd.merge_asof(
-                        s_usd_krw.to_frame(name='USD_KRW').sort_index(),
-                        s_target_usd.to_frame(name='TARGET_USD').sort_index(),
+                        df_usd_krw,
+                        df_target_usd,
                         left_index=True, right_index=True, direction='nearest'
                     )
                     
