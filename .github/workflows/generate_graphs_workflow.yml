@@ -25,7 +25,7 @@ jobs:
       - name: Run graph generator
         run: |
           cd script
-          python generate_graph.py usd cny
+          python generate_graph.py test_telegram
 
       - name: Commit and push changes
         run: |
