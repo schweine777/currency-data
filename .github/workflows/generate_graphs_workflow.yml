@@ -28,7 +28,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           cd script
-          python generate_graph.py FAIL_TEST
+          python generate_graph.py
 
       - name: Commit and push changes
         run: |
