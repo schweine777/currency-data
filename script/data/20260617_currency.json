@@ -1,0 +1,470 @@
+{
+  "date": "20260617",
+  "update_time": "2026-06-17 11:55:32",
+  "rates": [
+    {
+      "country": "미국 USD",
+      "standard_rate": "1513.8",
+      "buy": "1540.29",
+      "sell": "1487.31",
+      "send": "1528.6",
+      "receive": "1499.0"
+    },
+    {
+      "country": "유럽연합 EUR",
+      "standard_rate": "1757.75",
+      "buy": "1792.72",
+      "sell": "1722.78",
+      "send": "1775.32",
+      "receive": "1740.18"
+    },
+    {
+      "country": "일본 JPY (100엔)",
+      "standard_rate": "944.21",
+      "buy": "960.73",
+      "sell": "927.69",
+      "send": "953.46",
+      "receive": "934.96"
+    },
+    {
+      "country": "중국 CNY",
+      "standard_rate": "224.03",
+      "buy": "235.23",
+      "sell": "212.83",
+      "send": "226.27",
+      "receive": "221.79"
+    },
+    {
+      "country": "홍콩 HKD",
+      "standard_rate": "193.25",
+      "buy": "197.05",
+      "sell": "189.45",
+      "send": "195.18",
+      "receive": "191.32"
+    },
+    {
+      "country": "대만 TWD",
+      "standard_rate": "47.98",
+      "buy": "54.26",
+      "sell": "43.19",
+      "send": "48.5",
+      "receive": "47.46"
+    },
+    {
+      "country": "영국 GBP",
+      "standard_rate": "2032.81",
+      "buy": "2072.85",
+      "sell": "1992.77",
+      "send": "2053.13",
+      "receive": "2012.49"
+    },
+    {
+      "country": "오만 OMR",
+      "standard_rate": "3932.15",
+      "buy": "4207.4",
+      "sell": "3656.9",
+      "send": "3979.33",
+      "receive": "3884.97"
+    },
+    {
+      "country": "캐나다 CAD",
+      "standard_rate": "1081.48",
+      "buy": "1102.78",
+      "sell": "1060.18",
+      "send": "1092.29",
+      "receive": "1070.67"
+    },
+    {
+      "country": "스위스 CHF",
+      "standard_rate": "1910.28",
+      "buy": "1947.91",
+      "sell": "1872.65",
+      "send": "1929.38",
+      "receive": "1891.18"
+    },
+    {
+      "country": "스웨덴 SEK",
+      "standard_rate": "161.79",
+      "buy": "167.12",
+      "sell": "152.57",
+      "send": "163.4",
+      "receive": "160.18"
+    },
+    {
+      "country": "호주 AUD",
+      "standard_rate": "1069.35",
+      "buy": "1090.41",
+      "sell": "1048.29",
+      "send": "1080.04",
+      "receive": "1058.66"
+    },
+    {
+      "country": "뉴질랜드 NZD",
+      "standard_rate": "882.62",
+      "buy": "900.0",
+      "sell": "865.24",
+      "send": "891.44",
+      "receive": "873.8"
+    },
+    {
+      "country": "체코 CZK",
+      "standard_rate": "72.77",
+      "buy": "78.95",
+      "sell": "66.23",
+      "send": "73.57",
+      "receive": "71.97"
+    },
+    {
+      "country": "칠레 CLP",
+      "standard_rate": "1.71",
+      "buy": "1.88",
+      "sell": "1.54",
+      "send": "1.73",
+      "receive": "1.69"
+    },
+    {
+      "country": "튀르키예 TRY",
+      "standard_rate": "32.69",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "33.04",
+      "receive": "32.34"
+    },
+    {
+      "country": "몽골 MNT",
+      "standard_rate": "0.42",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "0.42",
+      "receive": "0.42"
+    },
+    {
+      "country": "이스라엘 ILS",
+      "standard_rate": "519.05",
+      "buy": "570.95",
+      "sell": "477.53",
+      "send": "525.27",
+      "receive": "512.83"
+    },
+    {
+      "country": "덴마크 DKK",
+      "standard_rate": "235.16",
+      "buy": "242.92",
+      "sell": "221.76",
+      "send": "237.51",
+      "receive": "232.81"
+    },
+    {
+      "country": "노르웨이 NOK",
+      "standard_rate": "159.81",
+      "buy": "165.08",
+      "sell": "150.71",
+      "send": "161.4",
+      "receive": "158.22"
+    },
+    {
+      "country": "사우디아라비아 SAR",
+      "standard_rate": "403.39",
+      "buy": "428.8",
+      "sell": "375.56",
+      "send": "407.42",
+      "receive": "399.36"
+    },
+    {
+      "country": "쿠웨이트 KWD",
+      "standard_rate": "4910.31",
+      "buy": "5229.48",
+      "sell": "4517.49",
+      "send": "4959.41",
+      "receive": "4861.21"
+    },
+    {
+      "country": "바레인 BHD",
+      "standard_rate": "4014.85",
+      "buy": "4271.8",
+      "sell": "3693.67",
+      "send": "4054.99",
+      "receive": "3974.71"
+    },
+    {
+      "country": "아랍에미리트 AED",
+      "standard_rate": "412.17",
+      "buy": "434.83",
+      "sell": "383.74",
+      "send": "416.29",
+      "receive": "408.05"
+    },
+    {
+      "country": "요르단 JOD",
+      "standard_rate": "2135.12",
+      "buy": "2325.14",
+      "sell": "1964.32",
+      "send": "2160.74",
+      "receive": "2109.5"
+    },
+    {
+      "country": "이집트 EGP",
+      "standard_rate": "30.2",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "30.56",
+      "receive": "29.84"
+    },
+    {
+      "country": "태국 THB",
+      "standard_rate": "46.51",
+      "buy": "48.83",
+      "sell": "43.72",
+      "send": "46.97",
+      "receive": "46.05"
+    },
+    {
+      "country": "싱가포르 SGD",
+      "standard_rate": "1180.81",
+      "buy": "1204.3",
+      "sell": "1157.32",
+      "send": "1192.61",
+      "receive": "1169.01"
+    },
+    {
+      "country": "말레이시아 MYR",
+      "standard_rate": "372.12",
+      "buy": "399.65",
+      "sell": "344.59",
+      "send": "375.84",
+      "receive": "368.4"
+    },
+    {
+      "country": "인도네시아 IDR 100",
+      "standard_rate": "8.53",
+      "buy": "9.38",
+      "sell": "7.68",
+      "send": "8.61",
+      "receive": "8.45"
+    },
+    {
+      "country": "카타르 QAR",
+      "standard_rate": "415.59",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "420.57",
+      "receive": "410.61"
+    },
+    {
+      "country": "카자흐스탄 KZT",
+      "standard_rate": "3.1",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "3.13",
+      "receive": "3.07"
+    },
+    {
+      "country": "브루나이 BND",
+      "standard_rate": "1180.81",
+      "buy": "1228.04",
+      "sell": "1109.97",
+      "send": "1194.97",
+      "receive": "1166.65"
+    },
+    {
+      "country": "인도 INR",
+      "standard_rate": "16.01",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "16.19",
+      "receive": "15.83"
+    },
+    {
+      "country": "파키스탄 PKR",
+      "standard_rate": "5.44",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "5.5",
+      "receive": "5.38"
+    },
+    {
+      "country": "방글라데시 BDT",
+      "standard_rate": "12.33",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "12.47",
+      "receive": "12.19"
+    },
+    {
+      "country": "필리핀 PHP",
+      "standard_rate": "25.12",
+      "buy": "27.63",
+      "sell": "23.07",
+      "send": "25.37",
+      "receive": "24.87"
+    },
+    {
+      "country": "멕시코 MXN",
+      "standard_rate": "87.99",
+      "buy": "97.22",
+      "sell": "78.76",
+      "send": "88.86",
+      "receive": "87.12"
+    },
+    {
+      "country": "브라질 BRL",
+      "standard_rate": "297.52",
+      "buy": "327.86",
+      "sell": "267.77",
+      "send": "301.09",
+      "receive": "293.95"
+    },
+    {
+      "country": "베트남 VND 100",
+      "standard_rate": "5.75",
+      "buy": "6.42",
+      "sell": "5.08",
+      "send": "5.8",
+      "receive": "5.7"
+    },
+    {
+      "country": "남아프리카 공화국 ZAR",
+      "standard_rate": "93.48",
+      "buy": "100.95",
+      "sell": "86.01",
+      "send": "94.6",
+      "receive": "92.36"
+    },
+    {
+      "country": "러시아 RUB",
+      "standard_rate": "20.88",
+      "buy": "22.86",
+      "sell": "17.23",
+      "send": "21.61",
+      "receive": "20.15"
+    },
+    {
+      "country": "헝가리 HUF",
+      "standard_rate": "5.03",
+      "buy": "5.49",
+      "sell": "4.63",
+      "send": "5.08",
+      "receive": "4.98"
+    },
+    {
+      "country": "폴란드 PLN",
+      "standard_rate": "414.67",
+      "buy": "447.84",
+      "sell": "381.5",
+      "send": "419.23",
+      "receive": "410.11"
+    },
+    {
+      "country": "스리랑카 LKR",
+      "standard_rate": "4.52",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "4.57",
+      "receive": "4.47"
+    },
+    {
+      "country": "알제리 DZD",
+      "standard_rate": "11.38",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "11.51",
+      "receive": "11.25"
+    },
+    {
+      "country": "케냐 KES",
+      "standard_rate": "11.69",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "11.83",
+      "receive": "11.55"
+    },
+    {
+      "country": "콜롬비아 COP",
+      "standard_rate": "0.44",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "0.44",
+      "receive": "0.44"
+    },
+    {
+      "country": "탄자니아 TZS",
+      "standard_rate": "0.58",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "0.58",
+      "receive": "0.58"
+    },
+    {
+      "country": "네팔 NPR",
+      "standard_rate": "10.0",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "10.12",
+      "receive": "9.88"
+    },
+    {
+      "country": "루마니아 RON",
+      "standard_rate": "336.04",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "339.73",
+      "receive": "332.35"
+    },
+    {
+      "country": "리비아 LYD",
+      "standard_rate": "237.54",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "240.39",
+      "receive": "234.69"
+    },
+    {
+      "country": "마카오 MOP",
+      "standard_rate": "187.54",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "189.79",
+      "receive": "185.29"
+    },
+    {
+      "country": "미얀마 MMK",
+      "standard_rate": "0.72",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "0.72",
+      "receive": "0.72"
+    },
+    {
+      "country": "에티오피아 ETB",
+      "standard_rate": "9.47",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "9.58",
+      "receive": "9.36"
+    },
+    {
+      "country": "우즈베키스탄 UZS",
+      "standard_rate": "0.13",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "0.13",
+      "receive": "0.13"
+    },
+    {
+      "country": "캄보디아 KHR",
+      "standard_rate": "0.38",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "0.38",
+      "receive": "0.38"
+    },
+    {
+      "country": "피지 FJD",
+      "standard_rate": "677.73",
+      "buy": "nan",
+      "sell": "nan",
+      "send": "685.86",
+      "receive": "669.6"
+    }
+  ]
+}
