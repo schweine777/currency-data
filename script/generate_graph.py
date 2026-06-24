@@ -188,6 +188,7 @@ def generate_currency_graphs_for_code(ticker_symbol, currency_code, output_path,
             # 100단위 환율 처리 (엔화, 베트남 동 등)
             if is_100_unit:
                 data['Close'] = data['Close'] * 100
+                valid_close = valid_close * 100
                 unit_label = " (per 100 units)"
             else:
                 unit_label = ""
