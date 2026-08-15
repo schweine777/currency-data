@@ -103,80 +103,96 @@ def generate_currency_graphs_for_code(ticker_symbol, currency_code, output_path,
     """
     특정 통화의 기간별 그래프를 생성하여 지정된 폴더에 저장합니다.
     """
-    # 1일(1d)을 제외한 나머지 기간 설정
+    # 기간 및 최적 샘플링 간격 설정 (긴 기간에서도 튀지 않고 자연스러운 곡선 유지)
     periods = [
         ("1주", "1wk", "1h"),
-        ("1개월", "1mo", "1d"),
+        ("1개월", "1mo", "1h"),
         ("3개월", "3mo", "1d"),
         ("6개월", "6mo", "1d"),
         ("1년", "1y", "1d"),
-        ("3년", "3y", "1wk"),
-        ("5년", "5y", "1wk"),
-        ("10년", "10y", "1mo"),
+        ("3년", "3y", "1d"),
+        ("5년", "5y", "1d"),
+        ("10년", "10y", "1d"),
     ]
 
     # 현재 시간 (한국 시간)
     now = datetime.now().astimezone(pd.Timestamp.now(tz='Asia/Seoul').tz)
 
+    # 유효 데이터 추출 헬퍼 함수
+    def get_valid_series(df, col='Close'):
+        if df is None or df.empty:
+            return pd.Series(dtype='float64')
+        if col in df.columns:
+            s = df[col].dropna()
+        else:
+            try:
+                s = df.xs(col, axis=1, level=0).dropna()
+            except:
+                return pd.Series(dtype='float64')
+        if isinstance(s, pd.DataFrame):
+            s = s.iloc[:, 0]
+        return s
+
+    def to_kst_index(index):
+        if index.tz is None:
+            return index.tz_localize('UTC').tz_convert('Asia/Seoul')
+        return index.tz_convert('Asia/Seoul')
+
+    def to_kst_timestamp(ts):
+        if ts.tz is None:
+            return ts.tz_localize('UTC').tz_convert('Asia/Seoul')
+        return ts.tz_convert('Asia/Seoul')
+
+    def clean_outliers(series):
+        if len(series) < 5:
+            return series
+        med = series.median()
+        if med > 0:
+            return series[(series >= med * 0.1) & (series <= med * 10.0)]
+        return series
+
     for label, period, interval in periods:
         filename = f"{base_filename}_{period}.png"
         filepath = os.path.join(output_path, filename)
         
-        # 데이터 다운로드
         try:
-            # 유효 데이터 추출 함수
-            def get_valid_series(df):
-                if df is None or df.empty:
-                    return pd.Series(dtype='float64')
-                if 'Close' in df.columns:
-                    s = df['Close'].dropna()
-                else:
-                    try:
-                        s = df.xs('Close', axis=1, level=0).dropna()
-                    except:
-                        return pd.Series(dtype='float64')
-                if isinstance(s, pd.DataFrame):
-                    s = s.iloc[:, 0]
-                return s
-
-            # 1순위: 직접 환율 시도
+            # 1. 데이터 다운로드
             data = yf.download(tickers=ticker_symbol, period=period, interval=interval, progress=False)
-            valid_close = get_valid_series(data)
+            valid_close = clean_outliers(get_valid_series(data, 'Close'))
+            s_high = clean_outliers(get_valid_series(data, 'High'))
+            s_low = clean_outliers(get_valid_series(data, 'Low'))
 
             # 2순위: 직접 환율 데이터가 부족하면 교차 환율(Cross Rate) 계산 (USD 기준)
             if len(valid_close) < 2 and currency_code != "USD":
                 print(f"  Note: Direct ticker {ticker_symbol} has insufficient data ({len(valid_close)} pts). Attempting cross-rate...")
                 
-                # USD/KRW 기준 데이터 가져오기
+                # USD/KRW 및 대상 통화 USD 환율 다운로드
                 usd_krw = yf.download(tickers="USDKRW=X", period=period, interval=interval, progress=False)
-                # 대상 통화의 USD 환율 가져오기
                 target_usd = yf.download(tickers=f"{currency_code}=X", period=period, interval=interval, progress=False)
                 
-                s_usd_krw = get_valid_series(usd_krw)
-                s_target_usd = get_valid_series(target_usd)
+                s_usd_close = clean_outliers(get_valid_series(usd_krw, 'Close'))
+                s_target_close = clean_outliers(get_valid_series(target_usd, 'Close'))
 
-                if not s_usd_krw.empty and not s_target_usd.empty:
-                    # 두 데이터의 인덱스(시간)를 기준으로 병합
-                    df_usd_krw = s_usd_krw.to_frame(name='USD_KRW').sort_index()
-                    df_target_usd = s_target_usd.to_frame(name='TARGET_USD').sort_index()
+                direct_usd_list = ["EUR", "GBP", "AUD", "NZD"]
+
+                if not s_usd_close.empty and not s_target_close.empty:
+                    df_usd = s_usd_close.to_frame(name='USD_KRW').sort_index()
+                    df_target = s_target_close.to_frame(name='TARGET_USD').sort_index()
                     
                     combined = pd.merge_asof(
-                        df_usd_krw,
-                        df_target_usd,
+                        df_usd,
+                        df_target,
                         left_index=True, right_index=True, direction='nearest'
                     )
-                    
-                    # 환율 계산 로직
-                    direct_usd_list = ["EUR", "GBP", "AUD", "NZD"]
                     
                     if currency_code in direct_usd_list:
                         combined['Close'] = combined['USD_KRW'] * combined['TARGET_USD']
                     else:
                         combined['Close'] = combined['USD_KRW'] / combined['TARGET_USD']
                     
-                    data = combined[['Close']]
-                    valid_close = get_valid_series(data)
-                    print(f"  Successfully calculated cross-rate for {currency_code} ({len(valid_close)} pts)")
+                    valid_close = clean_outliers(combined['Close'].dropna())
+                    s_high = valid_close
+                    s_low = valid_close
 
             # 최종 데이터 확인 (2개 미만이면 그래프 생성 불가 및 기존 파일 삭제)
             if len(valid_close) < 2:
@@ -185,37 +201,32 @@ def generate_currency_graphs_for_code(ticker_symbol, currency_code, output_path,
                     os.remove(filepath)
                 continue
 
+            # KST 시간대 변환
+            valid_close.index = to_kst_index(valid_close.index)
+
             # 100단위 환율 처리 (엔화, 베트남 동 등)
             if is_100_unit:
-                data['Close'] = data['Close'] * 100
                 valid_close = valid_close * 100
                 unit_label = " (per 100 units)"
             else:
                 unit_label = ""
 
-            # 한국 시간(Asia/Seoul)으로 변환
-            if data.index.tz is None:
-                data.index = data.index.tz_localize('UTC')
-            data.index = data.index.tz_convert('Asia/Seoul')
+            # 정확한 최고값 / 최저값 및 시점 산출
+            max_val = float(valid_close.max())
+            max_idx = valid_close.idxmax()
+            min_val = float(valid_close.min())
+            min_idx = valid_close.idxmin()
 
             # 그래프 그리기
             plt.figure(figsize=(12, 6))
-            plt.plot(data.index, data['Close'], color='red', linewidth=1.5)
+            plt.plot(valid_close.index, valid_close.values, color='red', linewidth=1.5)
             
             # 최고/최저점 표시 및 점 찍기
-            try:
-                max_val = valid_close.max()
-                min_val = valid_close.min()
-                max_idx = valid_close.idxmax()
-                min_idx = valid_close.idxmin()
+            plt.scatter(max_idx, max_val, color='darkred', s=50, zorder=5)
+            plt.scatter(min_idx, min_val, color='blue', s=50, zorder=5)
 
-                plt.scatter(max_idx, max_val, color='darkred', s=50, zorder=5)
-                plt.scatter(min_idx, min_val, color='blue', s=50, zorder=5)
-
-                plt.text(max_idx, max_val, f" High: {max_val:.2f}", color='darkred', fontweight='bold', verticalalignment='bottom')
-                plt.text(min_idx, min_val, f" Low: {min_val:.2f}", color='blue', fontweight='bold', verticalalignment='top')
-            except:
-                pass
+            plt.text(max_idx, max_val, f" High: {max_val:.2f}", color='darkred', fontweight='bold', verticalalignment='bottom')
+            plt.text(min_idx, min_val, f" Low: {min_val:.2f}", color='blue', fontweight='bold', verticalalignment='top')
 
             plt.xlabel("Date (KST)", fontsize=10)
             plt.ylabel(f"Exchange Rate{unit_label}", fontsize=10)
@@ -227,8 +238,8 @@ def generate_currency_graphs_for_code(ticker_symbol, currency_code, output_path,
             ax.xaxis.set_major_formatter(mdates.DateFormatter('%y-%m-%d'))
             
             # 그래프의 오른쪽 끝을 오늘 날짜로 강제 확장
-            if not data.empty:
-                ax.set_xlim(data.index.min(), now)
+            if not valid_close.empty:
+                ax.set_xlim(valid_close.index.min(), now)
             
             plt.gcf().autofmt_xdate()
             plt.tight_layout()
